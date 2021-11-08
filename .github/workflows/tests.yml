@@ -27,7 +27,7 @@ jobs:
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s composerValidate
 
       - name: cgl
-        run: Build/Scripts/runTests.sh -s cgl -v -n
+        run: Build/Scripts/runTests.sh -s cgl -v -n -p ${{ matrix.php }}
 
       - name: Lint PHP
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s lint
