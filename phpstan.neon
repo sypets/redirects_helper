@@ -43,7 +43,7 @@ parameters:
   # check these paths
   paths:
     - Classes
-    - Tests
+    #- Tests
   # use these paths (but do not check)
   scanDirectories:
     - .Build/Web/typo3/sysext
