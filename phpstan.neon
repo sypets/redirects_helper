@@ -43,7 +43,7 @@ parameters:
   # check these paths
   paths:
     - Classes
-    - Tests
+    #- Tests
   # use these paths (but do not check)
   scanDirectories:
     - .Build/Web/typo3/sysext
@@ -58,7 +58,7 @@ parameters:
   editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
 
   # do not report errors which are defined in ignoreErrors, but are not found in code
-  #reportUnmatchedIgnoredErrors: false
+  reportUnmatchedIgnoredErrors: false
 
   ignoreErrors:
     # https://phpstan.org/user-guide/ignoring-errors
