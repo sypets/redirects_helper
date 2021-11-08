@@ -1,0 +1,11 @@
+# list of files that can be the same in all standard TYPO3 extensions
+.gitignore
+.editorconfig
+.gitattributes
+.php_cs.cache
+phpstan.bootstrap.php
+phpstan.neon
+
+# contains changes:
+# Build/Scripts/runTest.sh - extension name, todo
+# phpstan.neon - must be sorted out what is standard and what is specific to project

@@ -1,0 +1,5 @@
+# cat=Sanitize; type=boolean; label=Use DataHandler, if true, else use QueryBuilder. Using Datahandler will write to changelog (sys_history).
+useDataHandler = 1
+
+# cat=Sanitize; type=boolean; label=Always use HTTPS to form the target URL, not just if force_https is on in redirect record
+forceHttps = 0
