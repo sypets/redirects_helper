@@ -130,10 +130,12 @@ class RedirectsSanitizerCommand extends Command
                 break;
             default:
                 $this->write('Unsupported argument passed, use -h for help', AbstractMessage::ERROR);
-                return Command::FAILURE;
+                // @todo Use Command::FAILURE later, when older dependencies dropped
+                return 1;
         }
 
-        return Command::SUCCESS;
+        // @todo Use Command::SUCCESS later, when older dependencies dropped
+        return 0;
     }
 
     /**
