@@ -1,0 +1,17 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Cannot assign offset 'uid' to string\\.$#"
+			count: 1
+			path: Classes/Service/UrlService.php
+
+		-
+			message: "#^Offset 'slug' does not exist on string\\.$#"
+			count: 1
+			path: Classes/Service/UrlService.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: Classes/Service/UrlService.php
+

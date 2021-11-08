@@ -81,6 +81,11 @@ class UrlService
     protected $siteLanguage;
 
     /**
+     * @var SiteInterface
+     */
+    protected $site;
+
+    /**
      * @var Context
      */
     protected $context;
@@ -120,56 +125,47 @@ class UrlService
     /**
      * Inject SiteMatcher.
      * DI and autowiring is used in this extension.
-     *
-     * @param SiteMatcher|null $siteMatcher
      */
-    public function injectSiteMatcher(SiteMatcher $siteMatcher = null)
+    public function injectSiteMatcher(SiteMatcher $siteMatcher): void
     {
-        $this->siteMatcher = $siteMatcher ?: GeneralUtility::makeInstance(SiteMatcher::class);
+        $this->siteMatcher = $siteMatcher;
     }
 
     /**
      * inject ServerRequestFactory
      * DI and autowiring is used in this extension.
-     *
-     * @param ServerRequestFactory|null $requestFactory
      */
-    public function injectServerRequestFactory(ServerRequestFactory $requestFactory = null)
+    public function injectServerRequestFactory(ServerRequestFactory $requestFactory): void
     {
-        $this->serverRequestFactory = $requestFactory ?: GeneralUtility::makeInstance(ServerRequestFactory::class);
+        $this->serverRequestFactory = $requestFactory;
     }
 
     /**
      * inject RequestFactory
      * DI and autowiring is used in this extension.
-     *
-     * @param RequestFactory|null $factory
      */
-    public function injectRequestFactory(RequestFactory $factory = null)
+    public function injectRequestFactory(RequestFactory $factory = null): void
     {
-        $this->httpRequestFactory = $factory ?: GeneralUtility::makeInstance(RequestFactory::class);
+        $this->httpRequestFactory = $factory;
     }
 
     /**
      * inject Context
      * DI and autowiring is used in this extension.
-     *
-     * @param Context|null $context
      */
-    public function injectContext(Context $context = null)
+    public function injectContext(Context $context): void
     {
-        $this->context = $context ?? GeneralUtility::makeInstance(Context::class);
+        $this->context = $context;
     }
 
-    public function injectEnhancerFactory(EnhancerFactory $enhancerFactory = null)
+    public function injectEnhancerFactory(EnhancerFactory $enhancerFactory): void
     {
-        $this->enhancerFactory = $enhancerFactory ?: GeneralUtility::makeInstance(EnhancerFactory::class);
+        $this->enhancerFactory = $enhancerFactory;
     }
 
-    public function injectSiteFinder(SiteFinder $siteFinder = null)
+    public function injectSiteFinder(SiteFinder $siteFinder): void
     {
-        $this->siteFinder = $siteFinder ?:
-            GeneralUtility::makeInstance(SiteFinder::class);
+        $this->siteFinder = $siteFinder;
     }
 
     /**
@@ -178,9 +174,9 @@ class UrlService
      * @param PageSlugCandidateProvider|null $pageSlugCandidateProvider
      * @throws \UnexpectedValueException
      */
-    public function initializeSlugCandidateProvider(PageSlugCandidateProvider $pageSlugCandidateProvider = null)
+    public function initializeSlugCandidateProvider(PageSlugCandidateProvider $pageSlugCandidateProvider = null): void
     {
-        if (!$this->site) {
+        if ($this->site === null) {
             throw new \UnexpectedValueException('Site not initialized');
         }
 
@@ -197,7 +193,7 @@ class UrlService
      * Fetch a Site matching the given URL.
      *
      * @param string $url
-     * @return Site
+     * @return SiteInterface
      * @throws \InvalidArgumentException
      */
     public function getSiteForUrl(string $url): SiteInterface
@@ -341,9 +337,6 @@ class UrlService
 
     /**
      * @param int $pageUid
-     * @param bool $useOrigPageUid if true, generate a typolink to page of original
-     *   language, if false generate a typolink to the translated variant corresponding
-     *   to language of original URL
      * @return string
      * @throws UnknownLinkHandlerException
      */
@@ -368,7 +361,7 @@ class UrlService
         $routeResult = $this->urlToRouteResult($url);
 
         $this->site = $routeResult->getSite();
-        if (!$this->site || $this->site instanceof NullSite) {
+        if ($this->site instanceof NullSite) {
             throw new \InvalidArgumentException('Can\'t get site for URL:' . $url);
         }
         $this->initializeSlugCandidateProvider();
@@ -412,7 +405,7 @@ class UrlService
          */
         $routeResult = $this->siteMatcher->matchRequest($request);
 
-        if (!$routeResult || !($routeResult instanceof SiteRouteResult)) {
+        if (!($routeResult instanceof SiteRouteResult)) {
             throw new \InvalidArgumentException('Unable to convert give URL:' . $url);
         }
 

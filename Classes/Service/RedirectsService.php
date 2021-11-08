@@ -50,9 +50,9 @@ class RedirectsService
         Bootstrap::initializeBackendAuthentication();
     }
 
-    public function injectDataHandler(DataHandler $dataHandler)
+    public function injectDataHandler(DataHandler $dataHandler): void
     {
-        $this->dataHandler = $dataHandler ?: GeneralUtility::makeInstance(DataHandler::class);
+        $this->dataHandler = $dataHandler;
     }
 
     public function getRedirects(): array

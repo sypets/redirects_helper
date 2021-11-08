@@ -32,6 +32,9 @@ jobs:
       - name: Lint PHP
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s lint
 
+      - name: phpstan
+          run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s phpstan
+
       #- name: Unit tests
       #  run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s unit
 

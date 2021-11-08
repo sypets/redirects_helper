@@ -5,7 +5,7 @@
 #  -  the goal is to fix all problems that can be fixed and remove the error messages from this file
 # create:
 # 1. Increase level in phpstan.neon
-# 2. php vendor/bin/phpstan analyze  --configuration phpstan.neon extensions --generate-baseline
+# 2. php vendor/bin/phpstan analyze  --configuration phpstan.neon --generate-baseline
 # 3. Include baseline file in phpstan.neon
 #
 # Dealing with mixed arrays
@@ -28,31 +28,31 @@
 # assumes phpstan run via runTests.sh - with working directory in .Build
 
 includes:
-  #- phpstan-baseline.neon
+  - phpstan-baseline.neon
   # If phpstan/extension-installer is used, this is not necessary.
   #- vendor/jangregor/phpstan-prophecy/extension.neon
 
 parameters:
   bootstrapFiles:
     - phpstan.bootstrap.php
-  tmpDir: %currentWorkingDirectory%/.Build/var/cache/phpstan
+  tmpDir: .Build/var/cache/phpstan
   parallel:
     # Don't be overly greedy on machines with more CPU's to be a good neighbor especially on CI
     maximumNumberOfProcesses: 5
   level: 6
   # check these paths
   paths:
-    - %currentWorkingDirectory%/Classes
-    #- %currentWorkingDirectory%/Tests
+    - Classes
+    - Tests
   # use these paths (but do not check)
   scanDirectories:
-    - %currentWorkingDirectory%/Web/typo3/sysext
+    - .Build/Web/typo3/sysext
 
   # do not check if array types specified
   checkMissingIterableValueType: false
 
   excludes_analyse:
-    - %currentWorkingDirectory%/extensions/*/ext_emconf.php
+    #- ext_emconf.php
 
   # add link for PhpStorm
   editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
@@ -62,32 +62,11 @@ parameters:
 
   ignoreErrors:
     # https://phpstan.org/user-guide/ignoring-errors
-    - '#Cannot call method fetch.*\(\) on Doctrine\\DBAL\\Driver\\ResultStatement\|int.#'
     - '#Call to deprecated method fetch.*\(\) of class Doctrine\\DBAL\\Driver\\ResultStatement:#'
-    -
-        message: '#Right side of \\|\\| is always false.#'
-        paths:
-          - **/ext_localconf.php
-          - **/ext_tables.php
+    #- '#Cannot call method fetch.*\(\) on Doctrine\\DBAL\\Driver\\ResultStatement\|int.#'
+    #-
+    #    message: '#Right side of \\|\\| is always false.#'
+    #    paths:
+    #      - **/ext_localconf.php
+    #      - **/ext_tables.php
 
-  #stubFiles:
-    #- stubs/PageSlugCandidateProvider.stub
-
-services:
-    -
-        class: Symplify\PHPStanRules\Rules\RequireConstantInMethodCallPositionRule
-        tags: [phpstan.rules.rule]
-        arguments:
-            requiredLocalConstantInMethodCall:
-                TYPO3\CMS\Extbase\Mvc\Controller\ActionController:
-                    addFlashMessage:
-                        - 2
-    -
-        class: Symplify\PHPStanRules\Rules\ForbiddenNodeRule
-        tags: [phpstan.rules.rule]
-        arguments:
-            forbiddenNodes:
-                - PhpParser\Node\Expr\ErrorSuppress
-    -
-        class: Symplify\PHPStanRules\Rules\SuffixInterfaceRule
-        tags: [phpstan.rules.rule]

@@ -84,7 +84,7 @@ class RedirectsSanitizerCommand extends Command
     /**
      * Configure the command by defining the name, options and arguments
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setDescription('Sanitize sys_redirects')
             ->addOption(
@@ -102,7 +102,7 @@ class RedirectsSanitizerCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->forceHttps = (bool)(GeneralUtility::makeInstance(ExtensionConfiguration::class)
             ->get('redirects_helper', 'forceHttps'));
@@ -274,7 +274,7 @@ class RedirectsSanitizerCommand extends Command
      * AbstractMessage::ERROR
      *
      * @param string $msg
-     * @param $outputLevel
+     * @param int $level
      *
      * @todo Use OutputInterface, see https://symfony.com/doc/current/console/verbosity.html
      */
