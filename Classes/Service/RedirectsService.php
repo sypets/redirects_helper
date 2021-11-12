@@ -48,7 +48,7 @@ class RedirectsService
             ->select('*')
             ->from(self::TABLE)
             ->execute()
-            ->fetchAll();
+            ->fetchAllAssociative() ?: [];
     }
 
     public function getTargetType(array $redirectRecord): int

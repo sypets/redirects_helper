@@ -56,14 +56,11 @@ class RedirectsSanitizerCommand extends Command
      */
     protected $forceHttps;
 
-    public function injectUrlService(UrlService $urlService = null): void
+    public function __construct(UrlService $urlService, RedirectsService $redirectsService)
     {
-        $this->urlService = $urlService ?: GeneralUtility::makeInstance(UrlService::class);
-    }
-
-    public function injectRedirectsService(RedirectsService $redirectsService = null): void
-    {
-        $this->redirectsService = $redirectsService ?: GeneralUtility::makeInstance(RedirectsService::class);
+        parent::__construct('redirects_helper:sanitize');
+        $this->urlService = $urlService;
+        $this->redirectsService = $redirectsService;
     }
 
     /**
