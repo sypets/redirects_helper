@@ -3,6 +3,8 @@
 declare(strict_types=1);
 namespace Sypets\RedirectsHelper\Command;
 
+use Doctrine\DBAL\ForwardCompatibility\Result;
+use Doctrine\DBAL\Driver\ResultStatement;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -104,12 +106,9 @@ class RedirectsSanitizerCommand extends Command
         } else {
             $this->write('No dry run - irreversible changes will be made', AbstractMessage::INFO);
         }
-
-        $redirects = $this->redirectsService->getRedirects();
-
         switch ($cmd) {
             case 'path2pagelink':
-                $this->convertPathToPageLink($redirects);
+                $this->convertPathToPageLink();
                 break;
             default:
                 $this->write('Unsupported argument passed, use -h for help', AbstractMessage::ERROR);
@@ -122,12 +121,19 @@ class RedirectsSanitizerCommand extends Command
     }
 
     /**
-     * @param array $redirects
      * @todo add dry-run
      * @todo make configurable: use https, set endtime
      */
-    protected function convertPathToPageLink(array $redirects): void
+    protected function convertPathToPageLink(): void
     {
+        $redirects = $this->redirectsService->getRedirects();
+
+        //if (!$statement || !$statement instanceOf Result || $statement->rowCount() === 0) {
+        if (!$redirects instanceof Result || $redirects->rowCount() === 0) {
+            $this->io->writeln('No redirects');
+            return;
+        }
+
         /*
          * 1. get type of target link - consider only paths (e.g. '/someslug/other')
          * 2. get final URL and check (follow redirects, ignore invalid URLs)
@@ -153,7 +159,7 @@ class RedirectsSanitizerCommand extends Command
 
         $this->write('Checking ...', AbstractMessage::INFO);
 
-        foreach ($redirects as $redirect) {
+        while ($redirect = $redirects->fetchAssociative()) {
             try {
                 $uid = $redirect['uid'];
                 $originalTarget = $redirect['target'];

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 namespace Sypets\RedirectsHelper\Service;
 
+use Doctrine\DBAL\Driver\Statement;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
@@ -41,15 +42,17 @@ class RedirectsService
         $this->dataHandler = $dataHandler;
     }
 
-    public function getRedirects(): array
+    /**
+     * @return Statement|\Doctrine\DBAL\ForwardCompatibility\Result|\Doctrine\DBAL\Driver\ResultStatement|int
+     */
+    public function getRedirects()
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable(self::TABLE);
 
         return $queryBuilder
             ->select('*')
             ->from(self::TABLE)
-            ->execute()
-            ->fetchAllAssociative() ?: [];
+            ->execute();
     }
 
     public function getTargetType(array $redirectRecord): int
