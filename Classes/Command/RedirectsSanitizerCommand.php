@@ -1,20 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
-/*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
- */
-
 namespace Sypets\RedirectsHelper\Command;
 
 use Symfony\Component\Console\Command\Command;
@@ -71,14 +57,11 @@ class RedirectsSanitizerCommand extends Command
      */
     protected $forceHttps;
 
-    public function injectUrlService(UrlService $urlService = null): void
+    public function __construct(UrlService $urlService, RedirectsService $redirectsService)
     {
-        $this->urlService = $urlService ?: GeneralUtility::makeInstance(UrlService::class);
-    }
-
-    public function injectRedirectsService(RedirectsService $redirectsService = null): void
-    {
-        $this->redirectsService = $redirectsService ?: GeneralUtility::makeInstance(RedirectsService::class);
+        parent::__construct('redirects_helper:sanitize');
+        $this->urlService = $urlService;
+        $this->redirectsService = $redirectsService;
     }
 
     /**
@@ -121,12 +104,9 @@ class RedirectsSanitizerCommand extends Command
         } else {
             $this->write('No dry run - irreversible changes will be made', AbstractMessage::INFO);
         }
-
-        $redirects = $this->redirectsService->getRedirects();
-
         switch ($cmd) {
             case 'path2pagelink':
-                $this->convertPathToPageLink($redirects);
+                $this->convertPathToPageLink();
                 break;
             default:
                 $this->write('Unsupported argument passed, use -h for help', AbstractMessage::ERROR);
@@ -139,12 +119,18 @@ class RedirectsSanitizerCommand extends Command
     }
 
     /**
-     * @param array $redirects
      * @todo add dry-run
      * @todo make configurable: use https, set endtime
      */
-    protected function convertPathToPageLink(array $redirects): void
+    protected function convertPathToPageLink(): void
     {
+        $redirects = $this->redirectsService->getRedirects();
+
+        if (!$redirects) {
+            $this->io->writeln('No redirects');
+            return;
+        }
+
         /*
          * 1. get type of target link - consider only paths (e.g. '/someslug/other')
          * 2. get final URL and check (follow redirects, ignore invalid URLs)
@@ -170,7 +156,7 @@ class RedirectsSanitizerCommand extends Command
 
         $this->write('Checking ...', AbstractMessage::INFO);
 
-        foreach ($redirects as $redirect) {
+        while ($redirect = $redirects->fetchAssociative()) {
             try {
                 $uid = $redirect['uid'];
                 $originalTarget = $redirect['target'];
