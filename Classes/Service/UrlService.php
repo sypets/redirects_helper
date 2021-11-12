@@ -293,7 +293,7 @@ class UrlService
      *
      * @param string $url
      * @param bool $alwaysLinkToOriginalLanguage always create a link to the page of the original
-     *   language (and not the language overlay). In some contexts this is useful, for example
+     *   language (and not the language overlay). In some contexts this may be useful, for example
      *   if typolinks are used in bodytext, a link is created using the configured behaviour for
      *   language handling.
      * @return array with information, including typolink, pageId, language etc.
@@ -305,16 +305,17 @@ class UrlService
         $candidate = $this->urlToPageCandidate($url);
 
         $languageId = $this->siteLanguage->getLanguageId();
-        if ($alwaysLinkToOriginalLanguage && $languageId != 0) {
+        $pageId = $candidate['uid'];
+        if ($languageId != 0) {
             $pageId = $candidate['l10n_parent'];
-        } else {
-            $pageId = $candidate['uid'];
+            if ($alwaysLinkToOriginalLanguage) {
+                $languageId = 0;
+            }
         }
 
         $results = [
-            'typolink' =>  $this->pageToTypolink($pageId),
+            'typolink' =>  $this->pageToTypolink($pageId, $languageId),
             'pageId' => $pageId,
-            'l10nParent' => $candidate['l10n_parent'] ?? 0,
             'languageId' => $languageId,
             'slug' => $candidate['slug']
         ];
@@ -326,15 +327,27 @@ class UrlService
      * @return string
      * @throws UnknownLinkHandlerException
      */
-    public function pageToTypolink(int $pageUid): string
+    public function pageToTypolink(int $pageUid, int $language): string
     {
         $linkService = GeneralUtility::makeInstance(LinkService::class);
+
+        /**
+         * @todo due to no information which paraameters are correct, we are more
+         *   or less guessing here, should be fixed
+         * @todo we can't pass the language here? Why?
+         */
         $parameters = [
             'type' => LinkService::TYPE_PAGE,
             'pageuid' => $pageUid
         ];
 
-        return $linkService->asString($parameters);
+        $result = $linkService->asString($parameters);
+        if ($language !== 0) {
+            // @todo apparently this is different in v10 and v11 ????
+            //$result .= '&_language=' . $language;
+            $result .= '&L=' . $language;
+        }
+        return $result;
     }
 
     /**
