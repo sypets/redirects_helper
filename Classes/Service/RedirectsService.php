@@ -43,7 +43,8 @@ class RedirectsService
     }
 
     /**
-     * @return Statement|\Doctrine\DBAL\ForwardCompatibility\Result|\Doctrine\DBAL\Driver\ResultStatement|int
+     * @todo We do not pass return type here - problem supporting several TYPO3
+     *  versions and composer install min / max (is ignored in phpstan baseline file)
      */
     public function getRedirects()
     {

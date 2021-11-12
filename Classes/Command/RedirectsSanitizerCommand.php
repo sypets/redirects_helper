@@ -127,8 +127,7 @@ class RedirectsSanitizerCommand extends Command
     {
         $redirects = $this->redirectsService->getRedirects();
 
-        //if (!$statement || !$statement instanceOf Result || $statement->rowCount() === 0) {
-        if (!$redirects instanceof Result || $redirects->rowCount() === 0) {
+        if (!$redirects) {
             $this->io->writeln('No redirects');
             return;
         }

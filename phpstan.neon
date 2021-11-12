@@ -5,7 +5,7 @@
 #  -  the goal is to fix all problems that can be fixed and remove the error messages from this file
 # create:
 # 1. Increase level in phpstan.neon
-# 2. php vendor/bin/phpstan analyze  --configuration phpstan.neon --generate-baseline
+# 2. php .Build/bin/phpstan analyze  --configuration phpstan.neon --generate-baseline
 # 3. Include baseline file in phpstan.neon
 #
 # Dealing with mixed arrays

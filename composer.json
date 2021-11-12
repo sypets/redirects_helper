@@ -15,10 +15,7 @@
 	"config": {
 		"sort-packages": true,
 		"vendor-dir": ".Build/vendor",
-		"bin-dir": ".Build/bin",
-		"platform": {
-
-		}
+		"bin-dir": ".Build/bin"
 	},
 	"require": {
 		"php": ">=7.3.0",

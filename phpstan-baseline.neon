@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Method Sypets\\\\RedirectsHelper\\\\Service\\\\RedirectsService\\:\\:getRedirects\\(\\) has no return typehint specified\\.$#"
+			count: 1
+			path: Classes/Service/RedirectsService.php
+
+		-
 			message: "#^Cannot assign offset 'uid' to string\\.$#"
 			count: 1
 			path: Classes/Service/UrlService.php
