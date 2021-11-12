@@ -8,6 +8,14 @@ Build/Script/runTests.sh
 
 To run all tests, use convenience script Build/Scripts/ci.sh.
 
+Use the option -h to see all options!
+
+Make sure to always run Build/Scripts/cleanup.sh before committing or run Build/Scripts/ci.sh
+with option -c to clean up.
+
+The ci script may change composer.json for platform constraints. We do not want to push that
+kind of change to the codebase!
+
 To run individual tests, see commands in that script or in .github/workflows/tests.yml
 
 Always install with this first:

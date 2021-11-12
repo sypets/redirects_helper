@@ -3,7 +3,6 @@
 declare(strict_types=1);
 namespace Sypets\RedirectsHelper\Service;
 
-use Doctrine\DBAL\Driver\Statement;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
