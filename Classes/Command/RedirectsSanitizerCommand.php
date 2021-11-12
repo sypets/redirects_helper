@@ -118,10 +118,6 @@ class RedirectsSanitizerCommand extends Command
         return 0;
     }
 
-    /**
-     * @todo add dry-run
-     * @todo make configurable: use https, set endtime
-     */
     protected function convertPathToPageLink(): void
     {
         $redirects = $this->redirectsService->getRedirects();
@@ -161,11 +157,11 @@ class RedirectsSanitizerCommand extends Command
                 $uid = $redirect['uid'];
                 $originalTarget = $redirect['target'];
                 $sourcePath = $redirect['source_path'];
-                $forceHttps = (bool)($redirect['force_https'] ?: $this->forceHttps);
+                $forceHttps = $this->forceHttps;
 
                 $type = $this->redirectsService->getTargetType($redirect);
                 if ($type !== RedirectsService::TARGET_TYPE_PATH) {
-                    $this->write('uid=' . $uid . ':Skipping, target type is not path:' . $originalTarget, AbstractMessage::NOTICE);
+                    $this->write(sprintf('uid=%d:Skipping, target type is not path (target=%s)',  $uid, $originalTarget) , AbstractMessage::NOTICE);
                     continue;
                 }
                 // todo - make alwaysHttps configurable
@@ -182,7 +178,8 @@ class RedirectsSanitizerCommand extends Command
                 $effectiveUrl = $this->urlService->url2Url($url);
                 if ($effectiveUrl === '') {
                     $this->write(sprintf(
-                        'Skipping: URL does not resolve to valid URL: uid=%d, original target=%s, error=%s',
+                        'Skipping: URL %s does not resolve to valid URL (uid=%d, original target=%s, error=%s)',
+                        $url,
                         $uid,
                         $originalTarget,
                         $this->urlService->getErrorMessage()
