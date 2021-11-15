@@ -108,49 +108,14 @@ class UrlService
      */
     protected $effectiveUrl;
 
-    /**
-     * Inject SiteMatcher.
-     * DI and autowiring is used in this extension.
-     */
-    public function injectSiteMatcher(SiteMatcher $siteMatcher): void
+    public function __construct(SiteMatcher $siteMatcher, ServerRequestFactory $requestFactory, RequestFactory $factory,
+        Context $context, EnhancerFactory $enhancerFactory, SiteFinder $siteFinder)
     {
         $this->siteMatcher = $siteMatcher;
-    }
-
-    /**
-     * inject ServerRequestFactory
-     * DI and autowiring is used in this extension.
-     */
-    public function injectServerRequestFactory(ServerRequestFactory $requestFactory): void
-    {
         $this->serverRequestFactory = $requestFactory;
-    }
-
-    /**
-     * inject RequestFactory
-     * DI and autowiring is used in this extension.
-     */
-    public function injectRequestFactory(RequestFactory $factory = null): void
-    {
         $this->httpRequestFactory = $factory;
-    }
-
-    /**
-     * inject Context
-     * DI and autowiring is used in this extension.
-     */
-    public function injectContext(Context $context): void
-    {
         $this->context = $context;
-    }
-
-    public function injectEnhancerFactory(EnhancerFactory $enhancerFactory): void
-    {
         $this->enhancerFactory = $enhancerFactory;
-    }
-
-    public function injectSiteFinder(SiteFinder $siteFinder): void
-    {
         $this->siteFinder = $siteFinder;
     }
 
@@ -160,12 +125,9 @@ class UrlService
      * @param PageSlugCandidateProvider|null $pageSlugCandidateProvider
      * @throws \UnexpectedValueException
      */
-    public function initializeSlugCandidateProvider(PageSlugCandidateProvider $pageSlugCandidateProvider = null): void
+    protected function initializeSlugCandidateProvider(Site $site, PageSlugCandidateProvider $pageSlugCandidateProvider = null): void
     {
-        if ($this->site === null) {
-            throw new \UnexpectedValueException('Site not initialized');
-        }
-
+        $this->site = $site;
         $this->pageSlugCandidateProvider = $pageSlugCandidateProvider ?:
             GeneralUtility::makeInstance(
                 PageSlugCandidateProvider::class,
@@ -358,12 +320,11 @@ class UrlService
     public function urlToPageCandidate(string $url): array
     {
         $routeResult = $this->urlToRouteResult($url);
-
-        $this->site = $routeResult->getSite();
-        if ($this->site instanceof NullSite) {
+        $site = $routeResult->getSite();
+        if ($site instanceof NullSite) {
             throw new \InvalidArgumentException('Can\'t get site for URL:' . $url);
         }
-        $this->initializeSlugCandidateProvider();
+        $this->initializeSlugCandidateProvider($site);
         $this->siteLanguage = $routeResult->getLanguage();
         $tail = $routeResult->getTail();
 
