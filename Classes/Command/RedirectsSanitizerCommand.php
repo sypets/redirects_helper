@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Sypets\RedirectsHelper\Service\RedirectsService;
 use Sypets\RedirectsHelper\Service\UrlService;
@@ -57,6 +58,21 @@ class RedirectsSanitizerCommand extends Command
      */
     protected $forceHttps;
 
+    /**
+     * @var bool
+     */
+    protected $interactive;
+
+    /**
+     * @var InputInterface
+     */
+    protected $input;
+
+    /**
+     * @var OutputInterface
+     */
+    protected $output;
+
     public function __construct(UrlService $urlService, RedirectsService $redirectsService)
     {
         parent::__construct('redirects_helper:sanitize');
@@ -91,6 +107,8 @@ class RedirectsSanitizerCommand extends Command
             ->get('redirects_helper', 'forceHttps'));
 
         $this->io = new SymfonyStyle($input, $output);
+        $this->input = $input;
+        $this->output = $output;
         $this->io->title($this->getDescription());
 
         $cmd = $input->getArgument('cmd');
@@ -98,6 +116,7 @@ class RedirectsSanitizerCommand extends Command
         $this->verbose = $this->options['verbose'] ?? false;
         $this->dryRun = $this->options['dry-run'] ?? false;
         $this->noOutput = $this->options['quiet'] ?? false;
+        $this->interactive = !($this->options['no-interaction'] ?? false);
 
         if ($this->dryRun) {
             $this->write('Dry run only - do not change', AbstractMessage::INFO);
@@ -121,6 +140,7 @@ class RedirectsSanitizerCommand extends Command
     protected function convertPathToPageLink(): void
     {
         $redirects = $this->redirectsService->getRedirects();
+        $helper = $this->getHelper('question');
 
         if (!$redirects) {
             $this->io->writeln('No redirects');
@@ -190,50 +210,50 @@ class RedirectsSanitizerCommand extends Command
                 $result = $this->urlService->urlToPageInfo($effectiveUrl, false);
                 $result['isValidUrl'] = true;
                 $result['originalTarget'] = $originalTarget;
-                $results[$uid] = $result;
 
+                $typolink = $result['typolink'] ?? '';
+                if ($typolink === '') {
+                    $this->write('Skipping: redirect has no typolink, uid=' . $uid, AbstractMessage::WARNING);
+                    continue;
+                }
                 $this->write(sprintf(
                     'OK: can be converted: uid=%d source=%s, target path %s can be converted to %s',
                     $uid,
                     $sourcePath,
                     $originalTarget,
-                    $result['typolink'] ?? ''
+                    $typolink
                 ), AbstractMessage::INFO);
-            } catch (\Exception | \Throwable $e) {
-                $results[$uid] = [
-                    'isValidUrl' => false,
-                    'errormessage' => $e->getMessage()
+
+                if ($this->dryRun) {
+                    continue;
+                }
+
+                if ($this->interactive) {
+                    $question = new ConfirmationQuestion('Convert this redirect? (y|n)', false);
+                    if (!$helper->ask($this->input, $this->output, $question)) {
+                        $this->write('Skip ...', AbstractMessage::INFO);
+                        continue;
+                    }
+                    $this->write('Continue ...', AbstractMessage::INFO);
+                }
+                $values = [
+                    'target' => $typolink
                 ];
-                $this->write($e->getMessage(), AbstractMessage::WARNING);
-                continue;
-            }
-        }
+                $errorMessage = '';
 
-        foreach ($results as $uid => $result) {
-            $uid = (int)$uid;
-            $typolink = $result['typolink'] ?? '';
-            $errorMessage = '';
-
-            if ($typolink === '') {
-                $this->write('Skipping: redirect has no typolink, uid=' . $uid, AbstractMessage::WARNING);
-                continue;
-            }
-
-            $values = [
-                'target' => $typolink
-            ];
-
-            $this->write(sprintf(
-                'convert redirect with uid=%d original target=%s new target=%s',
-                $uid,
-                $result['originalTarget'],
-                $typolink
-            ), AbstractMessage::INFO);
-            if (!$this->dryRun) {
+                $this->write(sprintf(
+                    'convert redirect with uid=%d original target=%s new target=%s',
+                    $uid,
+                    $result['originalTarget'],
+                    $typolink
+                ), AbstractMessage::INFO);
                 $result = $this->redirectsService->updateRedirect($uid, $values, [], $errorMessage);
                 if ($result === false) {
                     $this->write($errorMessage, AbstractMessage::ERROR);
                 }
+            } catch (\Exception | \Throwable $e) {
+                $this->write($e->getMessage(), AbstractMessage::WARNING);
+                continue;
             }
         }
     }
