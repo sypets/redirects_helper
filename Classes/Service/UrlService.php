@@ -108,9 +108,14 @@ class UrlService
      */
     protected $effectiveUrl;
 
-    public function __construct(SiteMatcher $siteMatcher, ServerRequestFactory $requestFactory, RequestFactory $factory,
-        Context $context, EnhancerFactory $enhancerFactory, SiteFinder $siteFinder)
-    {
+    public function __construct(
+        SiteMatcher $siteMatcher,
+        ServerRequestFactory $requestFactory,
+        RequestFactory $factory,
+        Context $context,
+        EnhancerFactory $enhancerFactory,
+        SiteFinder $siteFinder
+    ) {
         $this->siteMatcher = $siteMatcher;
         $this->serverRequestFactory = $requestFactory;
         $this->httpRequestFactory = $factory;
@@ -122,10 +127,9 @@ class UrlService
     /**
      * $this->site  must be initialized before calling this function!
      *
-     * @param PageSlugCandidateProvider|null $pageSlugCandidateProvider
      * @throws \UnexpectedValueException
      */
-    protected function initializeSlugCandidateProvider(Site $site, PageSlugCandidateProvider $pageSlugCandidateProvider = null): void
+    protected function initializeSlugCandidateProvider(SiteInterface $site, PageSlugCandidateProvider $pageSlugCandidateProvider = null): void
     {
         $this->site = $site;
         $this->pageSlugCandidateProvider = $pageSlugCandidateProvider ?:
