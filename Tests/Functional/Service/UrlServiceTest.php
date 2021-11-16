@@ -95,8 +95,8 @@ class UrlServiceTest extends FunctionalTestCase
         yield 'Existing URL with language 0' => [
             'https://example.com/abc',
             [
-                'typolink' =>  't3://page?uid=3',
-                'pageId' => 3,
+                'typolink' =>  't3://page?uid=2',
+                'pageId' => 2,
                 'languageId' => 0,
                 'slug' => '/abc'
             ]
@@ -109,7 +109,7 @@ class UrlServiceTest extends FunctionalTestCase
      */
     public function urlToPageInfoReturnsCorrectResult(string $url, array $expectedResult): void
     {
-        $this->importDataSet(__DIR__ . '/Fixtures/RedirectService_regexp.xml');
+        $this->importDataSet(__DIR__ . '/Fixtures/UrlService.xml');
         $this->writeSiteConfiguration(
             'testing',
             $this->buildSiteConfiguration(1, 'https://example.com/')
