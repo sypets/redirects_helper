@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Sypets\RedirectsHelper\Command;
 
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -91,8 +90,7 @@ class RedirectsSanitizerCommand extends Command
                 'd',
                 InputOption::VALUE_NONE,
                 'Do not make any changes, just show the changes'
-            )
-            ->addArgument('cmd', InputArgument::REQUIRED, 'command: "path2pagelink": convert path to typolink with page ID');
+            );
     }
 
     /**
@@ -111,7 +109,6 @@ class RedirectsSanitizerCommand extends Command
         $this->output = $output;
         $this->io->title($this->getDescription());
 
-        $cmd = $input->getArgument('cmd');
         $this->options = $input->getOptions();
         $this->verbose = $this->options['verbose'] ?? false;
         $this->dryRun = $this->options['dry-run'] ?? false;
@@ -123,15 +120,7 @@ class RedirectsSanitizerCommand extends Command
         } else {
             $this->write('No dry run - irreversible changes will be made', AbstractMessage::INFO);
         }
-        switch ($cmd) {
-            case 'path2pagelink':
-                $this->convertPathToPageLink();
-                break;
-            default:
-                $this->write('Unsupported argument passed, use -h for help', AbstractMessage::ERROR);
-                // @todo Use Command::FAILURE later, when older dependencies dropped
-                return 1;
-        }
+        $this->convertPathToPageLink();
 
         // @todo Use Command::SUCCESS later, when older dependencies dropped
         return 0;
