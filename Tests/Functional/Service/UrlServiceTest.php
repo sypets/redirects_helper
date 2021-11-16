@@ -16,6 +16,9 @@ use TYPO3\CMS\Core\Tests\Functional\SiteHandling\SiteBasedTestTrait;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\TestingFramework\Core\Functional\FunctionalTestCase;
 
+/**
+ * loosely based on TYPO3\CMS\Redirects\Tests\Functional\Service\RedirectServiceTest
+ */
 class UrlServiceTest extends FunctionalTestCase
 {
     use SiteBasedTestTrait;
@@ -73,7 +76,12 @@ class UrlServiceTest extends FunctionalTestCase
     {
         parent::setUp();
         Bootstrap::initializeLanguageObject();
-        $this->buildBaseSiteWithLanguages();
+        //$this->buildBaseSiteWithLanguages();
+        $this->writeSiteConfiguration(
+            'testing',
+            $this->buildSiteConfiguration(1, 'https://example.com/'),
+            $this->languages
+        );
     }
 
     protected function buildBaseSiteWithLanguages(): void
@@ -101,6 +109,26 @@ class UrlServiceTest extends FunctionalTestCase
                 'slug' => '/abc'
             ]
         ];
+
+        yield 'Existing URL with language 1 - different domain' => [
+            'https://de.example.com/abc',
+            [
+                'typolink' =>  't3://page?uid=2&L=1',
+                'pageId' => 2,
+                'languageId' => 1,
+                'slug' => '/abc'
+            ]
+        ];
+
+        yield 'Existing URL with language 2 - different prefix' => [
+            'https://example.com/es/abc',
+            [
+                'typolink' =>  't3://page?uid=2&L=2',
+                'pageId' => 2,
+                'languageId' => 2,
+                'slug' => '/abc'
+            ]
+        ];
     }
 
     /**
@@ -110,23 +138,24 @@ class UrlServiceTest extends FunctionalTestCase
     public function urlToPageInfoReturnsCorrectResult(string $url, array $expectedResult): void
     {
         $this->importDataSet(__DIR__ . '/Fixtures/UrlService.xml');
-        $this->writeSiteConfiguration(
-            'testing',
-            $this->buildSiteConfiguration(1, 'https://example.com/')
-        );
+
         $this->setUpFrontendRootPage(
             1,
             ['typo3/sysext/redirects/Tests/Functional/Service/Fixtures/Redirects.typoscript']
         );
 
+        $siteMatcher = GeneralUtility::makeInstance(SiteMatcher::class);
+        $siteMatcher->refresh();
+
         $subject = new UrlService(
-            new SiteMatcher(),
-            new ServerRequestFactory(),
-            new RequestFactory(),
-            new Context(),
-            new EnhancerFactory(),
-            new SiteFinder()
+            $siteMatcher,
+            GeneralUtility::makeInstance(ServerRequestFactory::class),
+            GeneralUtility::makeInstance(RequestFactory::class),
+            GeneralUtility::makeInstance(Context::class),
+            GeneralUtility::makeInstance(EnhancerFactory::class),
+            GeneralUtility::makeInstance(SiteFinder::class)
         );
+
         $result = $subject->urlToPageInfo($url, false);
 
         self::assertEquals($expectedResult, $result);
