@@ -44,7 +44,8 @@
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"Sypets\\RedirectsHelper\\Tests\\": "Tests/"
+			"Sypets\\RedirectsHelper\\Tests\\": "Tests/",
+			"TYPO3\\CMS\\Core\\Tests\\": ".Build/Web/typo3/sysext/core/Tests/"
 		}
 	},
 	"require-dev": {
