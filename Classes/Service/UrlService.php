@@ -52,9 +52,14 @@ class UrlService
     public const ERROR_URL_NOT_SUPPORTED = 1;
 
     /**
-     * @var PageSlugCandidateProvider
+     * @var array<string,mixed>
      */
-    protected $pageSlugCandidateProvider;
+    protected $pageSlugCandidateProviders;
+
+    /**
+     * @var array<mixed>
+     */
+    protected $currentPageSlugCandidateProvider;
 
     /**
      * @var SiteFinder
@@ -65,11 +70,6 @@ class UrlService
      * @var SiteLanguage
      */
     protected $siteLanguage;
-
-    /**
-     * @var SiteInterface
-     */
-    protected $site;
 
     /**
      * @var Context
@@ -122,6 +122,8 @@ class UrlService
         $this->context = $context;
         $this->enhancerFactory = $enhancerFactory;
         $this->siteFinder = $siteFinder;
+
+        $this->pageSlugCandidateProviders = [];
     }
 
     /**
@@ -131,14 +133,20 @@ class UrlService
      */
     protected function initializeSlugCandidateProvider(SiteInterface $site, PageSlugCandidateProvider $pageSlugCandidateProvider = null): void
     {
-        $this->site = $site;
-        $this->pageSlugCandidateProvider = $pageSlugCandidateProvider ?:
-            GeneralUtility::makeInstance(
-                PageSlugCandidateProvider::class,
-                $this->context,
-                $this->site,
-                $this->enhancerFactory
-            );
+        $identifier = $site->getIdentifier();
+        if (!isset($this->pageSlugCandidateProviders[$identifier])) {
+            $this->pageSlugCandidateProviders[$identifier] = [
+                'candidateProvider' => $pageSlugCandidateProvider ?:
+                    GeneralUtility::makeInstance(
+                        PageSlugCandidateProvider::class,
+                        $this->context,
+                        $site,
+                        $this->enhancerFactory
+                    ),
+                'site' => $site
+            ];
+            $this->currentPageSlugCandidateProvider = $this->pageSlugCandidateProviders[$identifier];
+        }
     }
 
     /**
@@ -262,15 +270,18 @@ class UrlService
      *   language (and not the language overlay). In some contexts this may be useful, for example
      *   if typolinks are used in bodytext, a link is created using the configured behaviour for
      *   language handling.
-     * @return array with information, including typolink, pageId, language etc.
+     * @return array with information, including typolink, pageId, language etc. or empty array
      * @throws \InvalidArgumentException
      * @throws UnknownLinkHandlerException
      */
     public function urlToPageInfo(string $url, bool $alwaysLinkToOriginalLanguage=false): array
     {
         $candidate = $this->urlToPageCandidate($url);
+        if ($candidate === []) {
+            return [];
+        }
 
-        $languageId = $this->siteLanguage->getLanguageId();
+        $languageId = $candidate['languageId'];
         $pageId = $candidate['uid'];
         if ($languageId != 0) {
             $pageId = $candidate['l10n_parent'];
@@ -319,23 +330,24 @@ class UrlService
     /**
      * @param string $url
      * @return array
-     * @throws \InvalidArgumentException
      */
     public function urlToPageCandidate(string $url): array
     {
         $routeResult = $this->urlToRouteResult($url);
         $site = $routeResult->getSite();
+        $siteIdentifier = $site->getIdentifier();
         if ($site instanceof NullSite) {
             throw new \InvalidArgumentException('Can\'t get site for URL:' . $url);
         }
+        $siteLanguage = $routeResult->getLanguage();
         $this->initializeSlugCandidateProvider($site);
-        $this->siteLanguage = $routeResult->getLanguage();
+
         $tail = $routeResult->getTail();
 
-        $candidates = $this->pageSlugCandidateProvider->getCandidatesForPath('/' . $tail, $this->siteLanguage) ?: [];
+        $candidates = $this->pageSlugCandidateProviders[$siteIdentifier]['candidateProvider']->getCandidatesForPath('/' . $tail, $siteLanguage) ?: [];
 
         if ($candidates === []) {
-            throw new \InvalidArgumentException('0 results for URL:' . $url);
+            return [];
         }
         $selectedCandidate = [];
         foreach ($candidates as $candidate) {
@@ -349,8 +361,9 @@ class UrlService
             break;
         }
         if ($selectedCandidate === []) {
-            throw new \InvalidArgumentException('0 results for URL:' . $url);
+            return [];
         }
+        $selectedCandidate['languageId'] = $siteLanguage->getLanguageId();
         return $selectedCandidate;
     }
 

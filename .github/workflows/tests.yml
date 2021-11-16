@@ -20,7 +20,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Composer
+      - name: Prepare tests
+        # we need to get typo3/cms-core as source to get the Tests dir with Test traits
+        run: composer config preferred-install.typo3/cms-core source
+
+      - name: Composer install
         run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s ${{ matrix.minMax }}
 
       - name: Composer validate
@@ -38,8 +42,8 @@ jobs:
       #- name: Unit tests
       #  run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -s unit
 
-      #- name: Functional tests with mariadb
-      #  run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -d mariadb -s functional
+      - name: Functional tests with mariadb
+        run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -d mariadb -s functional
 
       #- name: Functional tests with mssql
       #  run: Build/Scripts/runTests.sh -p ${{ matrix.php }} -d mssql -s functional

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dataset>
+    <pages>
+        <uid>1</uid>
+        <pid>0</pid>
+        <title>Root</title>
+        <slug>/</slug>
+        <hidden>0</hidden>
+        <deleted>0</deleted>
+        <fe_group>0</fe_group>
+    </pages>
+    <pages>
+        <uid>2</uid>
+        <pid>1</pid>
+        <title>ABC</title>
+        <slug>/abc</slug>
+        <hidden>0</hidden>
+        <deleted>0</deleted>
+        <fe_group>0</fe_group>
+    </pages>
+</dataset>
