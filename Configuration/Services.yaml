@@ -10,5 +10,5 @@ services:
   Sypets\RedirectsHelper\Command\RedirectsSanitizerCommand:
     tags:
       - name: 'console.command'
-        command: 'redirects_helper:sanitize'
+        command: 'redirects_helper:path2page'
         schedulable: false

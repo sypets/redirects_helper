@@ -1,7 +1,9 @@
 Redirects Helper
 
-!!! *Important*: This is currently an experimental version. It is a
-proof-of-concept and not yet used for production. Use at your own risk!
+.. important::
+
+   This is currently an experimental version. It is a
+   proof-of-concept and not yet used for production. Use at your own risk!
 
 What does it do
 ===============
@@ -25,19 +27,34 @@ This extension does the following:
 Commands
 ========
 
+path2page
+---------
+
 Converts the target of redirects. Only those with a path as target
 are converted to page link, e.g. "t3://page?uid=83".
 
 .. code-block:: shell
 
-   vendor/typo3 redirects_helper:sanitize topagelink
+   vendor/typo3 redirects_helper:path2page
 
 Use dry-run and / or verbose:
 
 .. code-block:: shell
 
    # -v: verbose
-   vendor/typo3 redirects_helper:sanitize -v topagelink
+   vendor/typo3 redirects_helper:path2page -v
    # -d: dry-run: do not change anything, only show
-   vendor/typo3 redirects_helper:sanitize -v -d topagelink
+   vendor/typo3 redirects_helper:path2page -d
+
+By default, interactive mode is on, so you must confirm each conversion. If
+you are confident, that it works correctly, you can use -n (non-interactive)
+
+.. code-block:: shell
+
+   # -v: verbose
+   vendor/typo3 redirects_helper:path2page -n
+
+.. warning::
+
+   There is no going back. Make a backup first.
 

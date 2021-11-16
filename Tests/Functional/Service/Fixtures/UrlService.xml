@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dataset>
+    <pages>
+        <uid>1</uid>
+        <pid>0</pid>
+        <title>Root</title>
+        <slug>/</slug>
+        <hidden>0</hidden>
+        <deleted>0</deleted>
+        <fe_group>0</fe_group>
+    </pages>
+    <pages>
+        <uid>2</uid>
+        <pid>1</pid>
+        <title>ABC</title>
+        <slug>/abc</slug>
+        <hidden>0</hidden>
+        <deleted>0</deleted>
+        <fe_group>0</fe_group>
+    </pages>
+    <!-- translation page de (lang=1) -->
+    <pages>
+        <uid>3</uid>
+        <pid>1</pid>
+        <title>ABC (de)</title>
+        <slug>/abc</slug>
+        <hidden>0</hidden>
+        <deleted>0</deleted>
+        <fe_group>0</fe_group>
+        <sys_language_uid>1</sys_language_uid>
+        <l10n_parent>2</l10n_parent>
+        <l10n_source>2</l10n_source>
+    </pages>
+    <!-- translation page es (lang=2) -->
+    <pages>
+        <uid>4</uid>
+        <pid>1</pid>
+        <title>ABC (es)</title>
+        <slug>/abc</slug>
+        <hidden>0</hidden>
+        <deleted>0</deleted>
+        <fe_group>0</fe_group>
+        <sys_language_uid>2</sys_language_uid>
+        <l10n_parent>2</l10n_parent>
+        <l10n_source>2</l10n_source>
+    </pages>
+</dataset>
