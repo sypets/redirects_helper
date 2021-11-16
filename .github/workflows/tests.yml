@@ -5,7 +5,12 @@
 
 name: CI
 
-on: [push, pull_request]
+# we do it this way to avoid multiple runs when pushing to PR
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
 
