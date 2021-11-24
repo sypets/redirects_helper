@@ -328,8 +328,13 @@ class UrlService
     }
 
     /**
+     * Converts an URL to page info. This can only work for URL for
+     * configured sites. The returned information is similar to
+     * result by getCandidatesForPath(), except that we also add
+     * the languageId.
+     *
      * @param string $url
-     * @return array
+     * @return array<string,mixed>
      */
     public function urlToPageCandidate(string $url): array
     {
@@ -337,7 +342,9 @@ class UrlService
         $site = $routeResult->getSite();
         $siteIdentifier = $site->getIdentifier();
         if ($site instanceof NullSite) {
-            throw new \InvalidArgumentException('Can\'t get site for URL:' . $url);
+            // this is not really an error. Because of following redirects, we might be
+            // trying to get a page for an URL which is not on the site!
+            return [];
         }
         $siteLanguage = $routeResult->getLanguage();
         $this->initializeSlugCandidateProvider($site);
