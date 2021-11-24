@@ -158,8 +158,10 @@ class RedirectsSanitizerCommand extends Command
 
                 $type = $this->redirectsService->getTargetType($redirect);
                 if ($type !== RedirectsService::TARGET_TYPE_PATH) {
-                    $this->output->writeln(sprintf('uid=%d:Skipping, target type is not path (target=%s)', $uid, $originalTarget),
-                        OutputInterface::VERBOSITY_DEBUG);
+                    $this->output->writeln(
+                        sprintf('uid=%d:Skipping, target type is not path (target=%s)', $uid, $originalTarget),
+                        OutputInterface::VERBOSITY_DEBUG
+                    );
                     continue;
                 }
                 // todo - make alwaysHttps configurable
