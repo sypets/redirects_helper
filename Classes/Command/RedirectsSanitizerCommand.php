@@ -12,7 +12,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Sypets\RedirectsHelper\Service\RedirectsService;
 use Sypets\RedirectsHelper\Service\UrlService;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class RedirectsSanitizerCommand extends Command
@@ -235,7 +234,7 @@ class RedirectsSanitizerCommand extends Command
                 ));
                 $result = $this->redirectsService->updateRedirect($uid, $values, [], $errorMessage);
                 if ($result === false) {
-                    $this->io->warning($errorMessage, AbstractMessage::ERROR);
+                    $this->io->warning($errorMessage);
                 }
             } catch (\Exception | \Throwable $e) {
                 $this->output->writeln($e->getMessage(), OutputInterface::VERBOSITY_DEBUG);
