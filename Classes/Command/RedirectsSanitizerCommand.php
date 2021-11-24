@@ -12,7 +12,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Sypets\RedirectsHelper\Service\RedirectsService;
 use Sypets\RedirectsHelper\Service\UrlService;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class RedirectsSanitizerCommand extends Command
@@ -35,17 +34,7 @@ class RedirectsSanitizerCommand extends Command
     /**
      * @var bool
      */
-    protected $verbose;
-
-    /**
-     * @var bool
-     */
     protected $dryRun;
-
-    /**
-     * @var bool
-     */
-    protected $noOutput;
 
     /**
      * @var array
@@ -110,15 +99,13 @@ class RedirectsSanitizerCommand extends Command
         $this->io->title($this->getDescription());
 
         $this->options = $input->getOptions();
-        $this->verbose = $this->options['verbose'] ?? false;
         $this->dryRun = $this->options['dry-run'] ?? false;
-        $this->noOutput = $this->options['quiet'] ?? false;
         $this->interactive = !($this->options['no-interaction'] ?? false);
 
         if ($this->dryRun) {
-            $this->write('Dry run only - do not change', AbstractMessage::INFO);
+            $this->output->writeln('Dry run only - do not change');
         } else {
-            $this->write('No dry run - irreversible changes will be made', AbstractMessage::INFO);
+            $this->output->writeln('No dry run - irreversible changes will be made');
         }
         $this->convertPathToPageLink();
 
@@ -159,7 +146,7 @@ class RedirectsSanitizerCommand extends Command
          */
         $results = [];
 
-        $this->write('Checking ...', AbstractMessage::INFO);
+        $this->output->writeln('Checking ...', OutputInterface::VERBOSITY_NORMAL);
 
         while ($redirect = $redirects->fetchAssociative()) {
             try {
@@ -170,48 +157,57 @@ class RedirectsSanitizerCommand extends Command
 
                 $type = $this->redirectsService->getTargetType($redirect);
                 if ($type !== RedirectsService::TARGET_TYPE_PATH) {
-                    $this->write(sprintf('uid=%d:Skipping, target type is not path (target=%s)', $uid, $originalTarget), AbstractMessage::NOTICE);
+                    $this->output->writeln(
+                        sprintf('uid=%d:Skipping, target type is not path (target=%s)', $uid, $originalTarget),
+                        OutputInterface::VERBOSITY_DEBUG
+                    );
                     continue;
                 }
                 // todo - make alwaysHttps configurable
                 $url = $this->redirectsService->getTargetPathUrl($redirect, $forceHttps);
 
                 if ($url === '') {
-                    $this->write(
+                    $this->output->writeln(
                         'Skipping: Can\'t build URL:  uid=' . $uid . ' host=' . $redirect['source_host'] . ' target=' . $originalTarget,
-                        AbstractMessage::NOTICE
+                        OutputInterface::VERBOSITY_DEBUG
                     );
                     continue;
                 }
 
                 $effectiveUrl = $this->urlService->url2Url($url);
                 if ($effectiveUrl === '') {
-                    $this->write(sprintf(
-                        'Skipping: URL %s does not resolve to valid URL (uid=%d, original target=%s, error=%s)',
+                    $this->output->writeln(sprintf(
+                        'Skipping: URL %s does not resolve to valid URL (uid=%d, original target=%s)',
                         $url,
                         $uid,
-                        $originalTarget,
-                        $this->urlService->getErrorMessage()
-                    ), AbstractMessage::NOTICE);
+                        $originalTarget
+                    ), OutputInterface::VERBOSITY_DEBUG);
                     continue;
                 }
-                // @todo add alwaysLinkToOriginalLanguage
                 $result = $this->urlService->urlToPageInfo($effectiveUrl, false);
+                if (!$result) {
+                    $this->output->writeln(sprintf(
+                        'Skipping: URL %s does not resolve to valid page (uid=%d, original target=%s)',
+                        $url,
+                        $uid,
+                        $originalTarget
+                    ), OutputInterface::VERBOSITY_DEBUG);
+                }
                 $result['isValidUrl'] = true;
                 $result['originalTarget'] = $originalTarget;
 
                 $typolink = $result['typolink'] ?? '';
                 if ($typolink === '') {
-                    $this->write('Skipping: redirect has no typolink, uid=' . $uid, AbstractMessage::WARNING);
+                    $this->output->writeln('Skipping: redirect has no typolink, uid=' . $uid, OutputInterface::VERBOSITY_DEBUG);
                     continue;
                 }
-                $this->write(sprintf(
+                $this->output->writeln(sprintf(
                     'OK: can be converted: uid=%d source=%s, target path %s can be converted to %s',
                     $uid,
                     $sourcePath,
                     $originalTarget,
                     $typolink
-                ), AbstractMessage::INFO);
+                ));
 
                 if ($this->dryRun) {
                     continue;
@@ -220,66 +216,30 @@ class RedirectsSanitizerCommand extends Command
                 if ($this->interactive) {
                     $question = new ConfirmationQuestion('Convert this redirect? (y|n)', false);
                     if (!$helper->ask($this->input, $this->output, $question)) {
-                        $this->write('Skip ...', AbstractMessage::INFO);
+                        $this->output->writeln('Skip ...', OutputInterface::VERBOSITY_QUIET);
                         continue;
                     }
-                    $this->write('Continue ...', AbstractMessage::INFO);
+                    $this->output->writeln('Continue ...', OutputInterface::VERBOSITY_QUIET);
                 }
                 $values = [
                     'target' => $typolink
                 ];
                 $errorMessage = '';
 
-                $this->write(sprintf(
+                $this->output->writeln(sprintf(
                     'convert redirect with uid=%d original target=%s new target=%s',
                     $uid,
                     $result['originalTarget'],
                     $typolink
-                ), AbstractMessage::INFO);
+                ));
                 $result = $this->redirectsService->updateRedirect($uid, $values, [], $errorMessage);
                 if ($result === false) {
-                    $this->write($errorMessage, AbstractMessage::ERROR);
+                    $this->io->warning($errorMessage);
                 }
             } catch (\Exception | \Throwable $e) {
-                $this->write($e->getMessage(), AbstractMessage::WARNING);
+                $this->output->writeln($e->getMessage(), OutputInterface::VERBOSITY_DEBUG);
                 continue;
             }
-        }
-    }
-
-    /**
-     * Map input options to supported AbstractMessage. The more severe the message,
-     * the higher the value. In case of an unexpected event (e.g. warning), the output should be
-     * visible, even if not explicitly set
-     *
-     * Options:
-     *
-     * -v   :  show all output
-     * -q   :  no output at all.
-     *
-     * By default, >= AbstractMessage::OK is displayed
-     *
-     * Starting here, everything will be output by default, unless -q (quiet) is given.
-     *
-     * AbstractMessage::NOTICE
-     * AbstractMessage::INFO
-     * AbstractMessage::OK
-     * AbstractMessage::WARNING
-     * AbstractMessage::ERROR
-     *
-     * @param string $msg
-     * @param int $level
-     *
-     * @todo Use OutputInterface, see https://symfony.com/doc/current/console/verbosity.html
-     */
-    protected function write(string $msg, int $level = AbstractMessage::INFO): void
-    {
-        if ($this->noOutput) {
-            return;
-        }
-
-        if ($this->verbose || $level >= AbstractMessage::OK) {
-            $this->io->writeln($msg);
         }
     }
 }

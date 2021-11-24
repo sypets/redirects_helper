@@ -27,24 +27,49 @@ This extension does the following:
 Commands
 ========
 
+.. warning::
+
+   There is no going back. Make a backup first.
+
 path2page
 ---------
 
 Converts the target of redirects. Only those with a path as target
 are converted to page link, e.g. "t3://page?uid=83".
 
+Show help:
+
 .. code-block:: shell
 
-   vendor/typo3 redirects_helper:path2page
+   vendor/bin/typo3 redirects_helper:path2page -h
 
-Use dry-run and / or verbose:
+Use dry-run (does not change anything):
+
+.. code-block:: shell
+
+   # -d: dry-run: do not change anything, only show
+   vendor/bin/typo3 redirects_helper:path2page -d
+
+You can use -v, -vv or -vvv (with increasing verbosity level):
 
 .. code-block:: shell
 
    # -v: verbose
-   vendor/typo3 redirects_helper:path2page -v
-   # -d: dry-run: do not change anything, only show
-   vendor/typo3 redirects_helper:path2page -d
+   vendor/bin/typo3 redirects_helper:path2page -d -v
+
+The output will show paths which can be converted (starting with "OK:"). With
+verbosity level -vv and above you will also see failed attempts to convert
+(which are not an error but due to fact that not all targets can be converted).
+
+You can also use this to filter for targets which cannot be resolved:
+
+.. code-block:: shell
+
+   # -v: verbose
+   vendor/bin/typo3 redirects_helper:path2page -d -vvv | grep -E "Skipping: URL.* does not resolve to valid URL"
+
+These are redirects where it might make sense to remove them. But beware, this
+is also the case if the target page is hidden.
 
 By default, interactive mode is on, so you must confirm each conversion. If
 you are confident, that it works correctly, you can use -n (non-interactive)
@@ -52,9 +77,5 @@ you are confident, that it works correctly, you can use -n (non-interactive)
 .. code-block:: shell
 
    # -v: verbose
-   vendor/typo3 redirects_helper:path2page -n
-
-.. warning::
-
-   There is no going back. Make a backup first.
+   vendor/bin/typo3 redirects_helper:path2page -n
 
