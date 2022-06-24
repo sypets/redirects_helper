@@ -98,6 +98,7 @@ class RedirectsSanitizerCommand extends Command
         $this->output = $output;
         $this->io->title($this->getDescription());
 
+        // @extensionScannerIgnoreLine : gives weak warning in v10
         $this->options = $input->getOptions();
         $this->dryRun = $this->options['dry-run'] ?? false;
         $this->interactive = !($this->options['no-interaction'] ?? false);
